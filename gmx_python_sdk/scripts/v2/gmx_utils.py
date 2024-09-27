@@ -5,6 +5,10 @@ import logging
 import os
 import json
 import requests
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # This must happen before using any environment variables
 
 import pandas as pd
 
@@ -75,6 +79,7 @@ contract_map = {
         "syntheticsreader":
         {
             "contract_address": "0x5Ca84c34a381434786738735265b9f3FD814b824",
+            # "contract_address": "0xf60becbba223EEA9495Da3f606753867eC10d139",
             "abi_path": "contracts/arbitrum/syntheticsreader.json"
         },
         "syntheticsrouter":
@@ -130,9 +135,7 @@ contract_map = {
 
 
 class ConfigManager:
-
     def __init__(self, chain: str):
-
         self.chain = chain
         self.rpc = None
         self.chain_id = None
@@ -141,14 +144,15 @@ class ConfigManager:
         self.tg_bot_token = None
 
     def set_config(self, filepath: str = os.path.join(base_dir, "config.yaml")):
-
+        # Optionally load some settings from a YAML file if needed
         with open(filepath, 'r') as file:
             config_file = yaml.safe_load(file)
 
-        self.set_rpc(config_file['rpcs'][self.chain])
-        self.set_chain_id(config_file['chain_ids'][self.chain])
-        self.set_wallet_address(config_file['user_wallet_address'])
-        self.set_private_key(config_file['private_key'])
+        # Environment variables are used for sensitive or chain-specific data
+        self.rpc = os.getenv(f'{self.chain.upper()}_RPC')
+        self.chain_id = config_file['chain_ids'][self.chain]  # Optionally keep this from YAML
+        self.user_wallet_address = os.getenv('USER_WALLET_ADDRESS')
+        self.private_key = os.getenv('PRIVATE_KEY')
 
     def set_rpc(self, value):
         self.rpc = value
@@ -549,6 +553,7 @@ def get_estimated_withdrawal_amount_out(config, params: dict):
         params['token_prices_tuple'],
         params['gm_amount'],
         params['ui_fee_receiver'],
+        0
     ).call()
 
     return output

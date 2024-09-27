@@ -90,7 +90,7 @@ class Markets:
                 ):
                     continue
                 market_symbol = token_address_dict[raw_market[1]]['symbol']
-                print(raw_market)
+                # print(raw_market)
                 if raw_market[2] == raw_market[3]:
                     market_symbol = f"{market_symbol}2"
                 decoded_markets[raw_market[0]] = {

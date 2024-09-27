@@ -107,7 +107,7 @@ class Withdraw:
                 raw_txn, self.config.private_key
             )
             tx_hash = self._connection.eth.send_raw_transaction(
-                signed_txn.rawTransaction
+                signed_txn.raw_transaction
             )
             self.log.info("Txn submitted!")
             self.log.info(
@@ -143,14 +143,15 @@ class Withdraw:
         )
 
         min_long_token_amount, min_short_token_amount = self._estimate_withdrawal()
-
-        # Giving a 10% buffer here
+        min_long_token_amount = int(min_long_token_amount/1.1)
+        min_short_token_amount = int(min_short_token_amount/1.1)
+        # Giving a 100% buffer here
         execution_fee = int(
             get_execution_fee(
                 self._gas_limits,
                 self._gas_limits_order_type,
                 self._connection.eth.gas_price
-            ) * 1.1
+            ) * 3
         )
 
         callback_gas_limit = 0
@@ -162,8 +163,8 @@ class Withdraw:
             eth_zero_address,
             ui_ref_address,
             self.market_key,
-            self.long_token_swap_path,
-            self.short_token_swap_path,
+            [],
+            [],
             min_long_token_amount,
             min_short_token_amount,
             should_unwrap_native_token,
@@ -188,7 +189,6 @@ class Withdraw:
                 self.gm_amount
             )
         )]
-
         # Send parameters for our swap
         multicall_args = multicall_args + [HexBytes(
             self._create_order(
